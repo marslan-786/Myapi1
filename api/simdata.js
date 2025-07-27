@@ -1,8 +1,13 @@
 export default async function handler(req, res) {
-  const { phone } = req.query;
+  let { phone } = req.query;
 
   if (!phone) {
     return res.status(400).json({ error: "📱 Phone number is required." });
+  }
+
+  // 🔧 Remove leading zero if present
+  if (phone.startsWith("0")) {
+    phone = phone.slice(1); // remove the first character
   }
 
   try {
