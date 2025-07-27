@@ -5,10 +5,8 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: "📱 Phone number is required." });
   }
 
-  // Step 1: Remove leading zero if present
   const cleanPhone = phone.startsWith("0") ? phone.substring(1) : phone;
 
-  // Step 2: Hardcoded credentials
   const username = "Kami";
   const password = "123456";
 
@@ -17,17 +15,22 @@ export default async function handler(req, res) {
     const response = await fetch(fetchUrl);
     const data = await response.json();
 
-    // Step 3: Detect network name (like jazz, zong, etc.)
     const network = Object.keys(data)[0];
-    const record = data[network][0];
+    const allRecords = data[network];
 
-    // Step 4: Prepare custom response
+    // 🎯 تلاش کریں وہ ریکارڈ جس کا موبائل نمبر میچ ہو
+    const matchedRecord = allRecords.find(entry => entry.Mobile.endsWith(cleanPhone));
+
+    if (!matchedRecord) {
+      return res.status(404).json({ error: "📵 No matching record found." });
+    }
+
     const result = {
       Developer: "Nothing is Impossible 🜲",
-      Mobile: record.Mobile,
-      Name: record.Name,
-      CNIC: record.CNIC,
-      Address: record.Address.trim(),
+      Mobile: matchedRecord.Mobile,
+      Name: matchedRecord.Name,
+      CNIC: matchedRecord.CNIC,
+      Address: matchedRecord.Address.trim(),
       Network: network
     };
 
