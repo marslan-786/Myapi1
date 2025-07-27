@@ -1,25 +1,28 @@
 export default async function handler(req, res) {
-  const { username, password, search_term } = req.query;
+  const { phone } = req.query;
 
-  if (!username || !password || !search_term) {
-    return res.status(400).json({ error: "Missing required parameters." });
+  if (!phone) {
+    return res.status(400).json({ error: "📱 Phone number is required." });
   }
 
-  // Remove leading zero if present
-  const cleanPhone = search_term.startsWith("0")
-    ? search_term.substring(1)
-    : search_term;
+  // Step 1: Remove leading zero if present
+  const cleanPhone = phone.startsWith("0") ? phone.substring(1) : phone;
+
+  // Step 2: Hardcoded credentials
+  const username = "Kami";
+  const password = "123456";
 
   try {
-    const fetchUrl = `https://pakdatabase.site/api/search.php?username=Kami&password=123456&search_term=${cleanPhone}`;
+    const fetchUrl = `https://pakdatabase.site/api/search.php?username=${username}&password=${password}&search_term=${cleanPhone}`;
     const response = await fetch(fetchUrl);
     const data = await response.json();
 
-    // Get the first network name (like jazz, zong, etc.)
+    // Step 3: Detect network name (like jazz, zong, etc.)
     const network = Object.keys(data)[0];
     const record = data[network][0];
 
-    const customResponse = {
+    // Step 4: Prepare custom response
+    const result = {
       Developer: "Nothing is Impossible 🜲",
       Mobile: record.Mobile,
       Name: record.Name,
@@ -28,8 +31,11 @@ export default async function handler(req, res) {
       Network: network
     };
 
-    return res.status(200).json(customResponse);
+    return res.status(200).json(result);
   } catch (error) {
-    return res.status(500).json({ error: "Internal Server Error", detail: error.message });
+    return res.status(500).json({
+      error: "🔧 Internal Server Error",
+      detail: error.message
+    });
   }
 }
