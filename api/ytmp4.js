@@ -1,7 +1,7 @@
 export default async function handler(req, res) {
-  const videoUrl = req.query.url;
+  const { url } = req.query;
 
-  if (!videoUrl) {
+  if (!url) {
     return res.status(400).json({
       creator: "Nothing Is Impossible",
       status: false,
@@ -10,12 +10,12 @@ export default async function handler(req, res) {
   }
 
   try {
-    const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
-
-    const externalApiUrl = `https://apis.davidcyriltech.my.id/youtube/mp4?url=${encodeURIComponent(videoUrl)}`;
-    const response = await fetch(externalApiUrl);
+    const apiUrl = `https://apis.davidcyriltech.my.id/youtube/mp4?url=${encodeURIComponent(url)}`;
+    
+    const response = await fetch(apiUrl);
     const data = await response.json();
 
+    // اگر API نے غلط رسپانس دیا
     if (!data || !data.result) {
       return res.status(500).json({
         creator: "Nothing Is Impossible",
@@ -24,18 +24,19 @@ export default async function handler(req, res) {
       });
     }
 
+    // کامیاب ریسپانس
     return res.status(200).json({
       creator: "Nothing Is Impossible",
       status: true,
-      result: data.result
+      result: data.result,
     });
 
   } catch (error) {
-    console.error("Error fetching video:", error);
+    console.error("API Error:", error);
     return res.status(500).json({
       creator: "Nothing Is Impossible",
       status: false,
-      message: "Internal server error"
+      message: "Internal Server Error. " + error.message,
     });
   }
 }
