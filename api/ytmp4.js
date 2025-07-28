@@ -18,7 +18,7 @@ export default async function handler(req, res) {
     // اگر API نے غلط رسپانس دیا
     if (!data || !data.result) {
       return res.status(500).json({
-        creator: "Nothing Is Impossible",
+        creator: "Nothing Is Impossible 🜲",
         status: false,
         message: "Failed to fetch video details.",
       });
@@ -26,7 +26,7 @@ export default async function handler(req, res) {
 
     // کامیاب ریسپانس
     return res.status(200).json({
-      creator: "Nothing Is Impossible",
+      creator: "Nothing Is Impossible 🜲",
       status: true,
       result: data.result,
     });
