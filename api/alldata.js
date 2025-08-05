@@ -1,15 +1,14 @@
-import fetch from 'node-fetch';
-import * as cheerio from 'cheerio';
+const fetch = require("node-fetch");
+const cheerio = require("cheerio");
 
-export default async function handler(req, res) {
-  const { number } = req.query;
-
+module.exports = async (req, res) => {
+  const number = req.query.number;
   if (!number) {
     return res.status(400).json({ error: "Please provide a number like ?number=03012345678" });
   }
 
   try {
-    // اصل سائٹ پر POST ریکویسٹ
+    // POST request
     const response = await fetch("https://live-tracker.site/", {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -21,7 +20,6 @@ export default async function handler(req, res) {
 
     const results = [];
 
-    // ہر resultcontainer سے ڈیٹا نکالیں
     $(".resultcontainer").each((_, container) => {
       const record = {};
       $(container).find(".row").each((_, row) => {
@@ -37,4 +35,4 @@ export default async function handler(req, res) {
   } catch (error) {
     return res.status(500).json({ error: "Failed to fetch data", details: error.message });
   }
-}
+};
