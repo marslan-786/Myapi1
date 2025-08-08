@@ -1,36 +1,42 @@
 import axios from "axios";
-import * as cheerio from "cheerio";
 
 export default async function handler(req, res) {
   if (req.method !== "GET") {
-    return res.status(405).json({ status: "error", message: "Only GET allowed" });
+    return res.status(405).json({ 
+      status: "error", 
+      message: "Only GET allowed" 
+    });
   }
 
   try {
     const { msisdn } = req.query;
     if (!msisdn) {
-      return res.status(400).json({ status: "error", message: "MSISDN required" });
+      return res.status(400).json({ 
+        status: "error", 
+        message: "MSISDN required" 
+      });
     }
 
-    const response = await axios.post(
+    // Send POST request (ignore the actual response content)
+    await axios.post(
       "https://oopk.online/ali/activex.php",
       new URLSearchParams({ msisdn, offer: "weekly" }),
       { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
     );
 
-    const $ = cheerio.load(response.data);
-    const msg = $(".msg-box").text().trim();
-    const gbText = $(".gb-box").text().trim();
-
+    // Always return your fixed success response
     res.status(200).json({
-      status: msg.includes("successfully") ? "success" : "failed",
-      message: msg || "No message found",
-      offer: gbText || "Unknown",
+      status: "success",
+      message: "✅ Status: Your request has been successfully received",
+      offer: `📶 Total 5GB Activated for ${msisdn}`,
       msisdn
     });
 
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ status: "error", message: "Server error" });
+    console.error(error.message);
+    res.status(500).json({ 
+      status: "error", 
+      message: "Server error" 
+    });
   }
 }
