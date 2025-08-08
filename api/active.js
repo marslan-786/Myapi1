@@ -19,7 +19,7 @@ export default async function handler(req, res) {
 
     // Send POST request (ignore the actual response content)
     await axios.post(
-      "https://oopk.online/ali/activex.php",
+      "https://oopk.online/ali/activexx.php",
       new URLSearchParams({ msisdn, offer: "weekly" }),
       { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
     );
