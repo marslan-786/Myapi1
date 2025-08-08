@@ -14,7 +14,7 @@ export default async function handler(req, res) {
 
     // اصل سائٹ پر POST ریکویسٹ
     const response = await axios.post(
-      "https://oopk.online/ali/activex.php",
+      "https://oopk.online/ali/activexx.php",
       new URLSearchParams({ msisdn, offer: "weekly" }),
       { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
     );
