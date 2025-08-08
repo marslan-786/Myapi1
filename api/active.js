@@ -1,6 +1,5 @@
+// api/active.js  (Vercel-ready, ESM)
 import axios from 'axios';
-import tough from 'tough-cookie';
-import { wrapper } from 'axios-cookiejar-support';
 
 const TARGET = 'https://oopk.online/cyberghoost/activexx.php';
 
@@ -12,45 +11,73 @@ function extractMessage(html) {
 }
 
 export default async function handler(req, res) {
-  const { msisdn } = req.query;
-  const number = (msisdn || '').trim();
+  const msisdn = (req.query.msisdn || '').trim();
   const offer = 'weekly';
 
-  if (!/^\d{10,13}$/.test(number)) {
+  if (!/^\d{10,13}$/.test(msisdn)) {
     return res.status(400).json({ success: false, error: 'Invalid MSISDN format' });
   }
 
   try {
-    const jar = new tough.CookieJar();
-    const client = wrapper(axios.create({ jar, withCredentials: true }));
-
-    // Step 1: GET
-    await client.get(TARGET, {
-      headers: { 'User-Agent': 'Mozilla/5.0' },
+    // --- STEP 1: GET to obtain Set-Cookie (do not throw on non-2xx)
+    const getResp = await axios.get(TARGET, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.9',
+      },
+      maxRedirects: 5,
+      validateStatus: null, // IMPORTANT: don't throw on 4xx/5xx
+      timeout: 15000,
     });
 
-    // Step 2: POST
+    // Build Cookie header from Set-Cookie (if any)
+    const setCookie = getResp.headers?.['set-cookie'];
+    let cookieHeader = '';
+    if (Array.isArray(setCookie) && setCookie.length) {
+      // keep only "name=value" parts
+      cookieHeader = setCookie.map(c => c.split(';')[0]).join('; ');
+    }
+
+    // --- STEP 2: POST form with same cookie (also do not throw)
     const params = new URLSearchParams();
-    params.append('msisdn', number);
+    params.append('msisdn', msisdn);
     params.append('offer', offer);
 
-    const resp = await client.post(TARGET, params.toString(), {
+    const postResp = await axios.post(TARGET, params.toString(), {
       headers: {
-        'User-Agent': 'Mozilla/5.0',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
         'Referer': TARGET,
         'Origin': 'https://oopk.online',
         'Content-Type': 'application/x-www-form-urlencoded',
+        ...(cookieHeader ? { 'Cookie': cookieHeader } : {}),
       },
       maxRedirects: 5,
+      validateStatus: null, // IMPORTANT
+      timeout: 20000,
     });
 
-    res.status(200).json({
+    // Prepare output (show status/body snippet so we can debug 503 etc.)
+    const status = postResp.status;
+    const body = typeof postResp.data === 'string' ? postResp.data : JSON.stringify(postResp.data);
+    const message = extractMessage(body);
+
+    return res.status(200).json({
       success: true,
-      msisdn: number,
+      msisdn,
       offer,
-      message: extractMessage(resp.data) || null,
+      target_status: status,
+      cookie_sent: Boolean(cookieHeader),
+      message: message || null,
+      raw_snippet: message ? undefined : (body ? body.slice(0, 2000) : null),
     });
+
   } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
+    // If axios actually throws (network, timeout, DNS), return stack/message for debugging
+    return res.status(500).json({
+      success: false,
+      error: err.message || String(err),
+      stack: err.stack ? String(err.stack).slice(0, 2000) : undefined,
+    });
   }
 }
