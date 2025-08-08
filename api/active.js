@@ -1,13 +1,8 @@
-// api.js
-// GET <server>/<msisdn> will auto-run activation with offer=weekly
-// Install: npm i express axios tough-cookie axios-cookiejar-support
-
-const express = require('express');
+// api/active.js
 const axios = require('axios');
 const tough = require('tough-cookie');
 const { wrapper } = require('axios-cookiejar-support');
 
-const app = express();
 const TARGET = 'https://oopk.online/cyberghoost/activexx.php';
 
 // Helper to extract message from HTML
@@ -18,23 +13,22 @@ function extractMessage(html) {
   return m[1].replace(/<[^>]*>/g, '').trim();
 }
 
-app.get('/:msisdn', async (req, res) => {
-  const msisdn = req.params.msisdn.trim();
-  const offer = 'weekly'; // fixed offer
+module.exports = async (req, res) => {
+  const { msisdn } = req.query; // Vercel میں /api/active/نمبر کیلئے rewrite لگائیں یا query میں نمبر آئے گا
+  const offer = 'weekly';
 
-  if (!/^\d{10,13}$/.test(msisdn)) {
+  if (!msisdn || !/^\d{10,13}$/.test(msisdn.trim())) {
     return res.status(400).json({ success: false, error: 'Invalid MSISDN format' });
   }
 
   try {
-    // New cookie jar per request
     const jar = new tough.CookieJar();
     const client = wrapper(axios.create({ jar, withCredentials: true }));
 
     // Step 1: GET to get session cookie
     await client.get(TARGET, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.1 Safari/537.36',
+        'User-Agent': 'Mozilla/5.0',
       },
     });
 
@@ -45,7 +39,7 @@ app.get('/:msisdn', async (req, res) => {
 
     const postResp = await client.post(TARGET, params.toString(), {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.1 Safari/537.36',
+        'User-Agent': 'Mozilla/5.0',
         'Referer': TARGET,
         'Origin': 'https://oopk.online',
         'Content-Type': 'application/x-www-form-urlencoded',
@@ -56,7 +50,7 @@ app.get('/:msisdn', async (req, res) => {
     const html = postResp.data;
     const message = extractMessage(html);
 
-    res.json({
+    res.status(200).json({
       success: true,
       msisdn,
       offer,
@@ -66,14 +60,4 @@ app.get('/:msisdn', async (req, res) => {
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
-});
-
-if (require.main === module) {
-  const PORT = process.env.PORT || 3000;
-  app.listen(PORT, () => {
-    console.log(`Server running: http://localhost:${PORT}/{msisdn}`);
-    console.log(`Example: http://localhost:${PORT}/923027665767`);
-  });
-}
-
-module.exports = app;
+};
