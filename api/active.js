@@ -1,6 +1,6 @@
-import axios from 'axios';
-import tough from 'tough-cookie';
-import { wrapper } from 'axios-cookiejar-support';
+const axios = require('axios');
+const tough = require('tough-cookie');
+const { wrapper } = require('axios-cookiejar-support');
 
 const TARGET = 'https://oopk.online/cyberghoost/activexx.php';
 
@@ -11,7 +11,7 @@ function extractMessage(html) {
   return m[1].replace(/<[^>]*>/g, '').trim();
 }
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   const { msisdn } = req.query;
   const number = (msisdn || '').trim();
   const offer = 'weekly';
@@ -56,4 +56,4 @@ export default async function handler(req, res) {
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
-}
+};
