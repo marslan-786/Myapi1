@@ -16,7 +16,7 @@ export default async function handler(req, res) {
   try {
     if (!otp) {
       // Send OTP
-      const response = await fetch("https://oopk.online/rahooja/index.php", {
+      const response = await fetch("https://oopk.online/rahoojaa/index.php", {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: new URLSearchParams({ msisdn }),
@@ -25,7 +25,7 @@ export default async function handler(req, res) {
       return res.json({ message: "OTP sent", response: text });
     } else {
       // Verify OTP
-      const response = await fetch("https://oopk.online/rahooja/index.php", {
+      const response = await fetch("https://oopk.online/rahoojaa/index.php", {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: new URLSearchParams({ msisdn, otp }),
