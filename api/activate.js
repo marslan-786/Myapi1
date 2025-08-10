@@ -2,7 +2,7 @@ const axios = require('axios');
 const tough = require('tough-cookie');
 const { wrapper } = require('axios-cookiejar-support');
 
-const TARGET = 'https://oopk.online/cyberghoost/activexx.php';
+const TARGET = 'https://oopk.online/rahooja/activexx.php';
 
 function extractMessage(html) {
   const re = /<div class="(?:msg-box|error-box)">([\s\S]*?)<\/div>/i;
