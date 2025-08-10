@@ -34,7 +34,7 @@ module.exports = async function handler(req, res) {
 
     // یہاں 5 دفعہ POST کریں اور نتائج جمع کریں
     let responses = [];
-    for (let i = 0; i < 50; i++) {
+    for (let i = 0; i < 5; i++) {
       const params = new URLSearchParams();
       params.append('msisdn', number);
       params.append('offer', offer);
