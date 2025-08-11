@@ -1,38 +1,38 @@
-const fetch = require("node-fetch");
-const cheerio = require("cheerio");
+const axios = require('axios');
+const cheerio = require('cheerio');
 
-module.exports = async (req, res) => {
+module.exports = async function handler(req, res) {
   const number = req.query.number;
+
   if (!number) {
-    return res.status(400).json({ error: "Please provide a number like ?number=03012345678" });
+    return res.status(400).json({ error: "Please provide a 'number' query parameter" });
   }
 
   try {
-    // POST request
-    const response = await fetch("https://live-tracker.site/", {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({ searchinfo: number }).toString()
-    });
+    const url = `https://simownerdetails.org.pk/wp-admin/admin-ajax.php?action=get_number_data&get_number_data=searchdata=${number}`;
+    const { data } = await axios.get(url);
 
-    const html = await response.text();
-    const $ = cheerio.load(html);
+    const $ = cheerio.load(data);
+    let results = [];
 
-    const results = [];
+    $('.result-card').each((_, el) => {
+      let name = $(el).find('.field label:contains("FULL NAME")').next().text().trim();
+      let phone = $(el).find('.field label:contains("PHONE")').next().text().trim();
+      let cnic = $(el).find('.field label:contains("CNIC")').next().text().trim();
+      let address = $(el).find('.field label:contains("ADDRESS")').next().text().trim();
 
-    $(".resultcontainer").each((_, container) => {
-      const record = {};
-      $(container).find(".row").each((_, row) => {
-        const head = $(row).find(".detailshead").text().trim().replace(":", "");
-        const detail = $(row).find(".details").text().trim();
-        record[head] = detail;
+      results.push({
+        Name: name || "Unknown",
+        Mobile: phone ? "+92" + phone.replace(/^0/, '') : "",
+        Country: "Pakistan",
+        CNIC: cnic || "",
+        Address: address || ""
       });
-      results.push(record);
     });
 
-    return res.status(200).json(results);
+    res.status(200).json(results);
 
   } catch (error) {
-    return res.status(500).json({ error: "Failed to fetch data", details: error.message });
+    res.status(500).json({ error: error.message });
   }
 };
