@@ -13,6 +13,7 @@ module.exports = async function handler(req, res) {
     const { data } = await axios.get(url);
 
     const $ = cheerio.load(data);
+
     let results = [];
 
     $('.result-card').each((_, el) => {
@@ -29,6 +30,13 @@ module.exports = async function handler(req, res) {
         Address: address || ""
       });
     });
+
+    if (results.length === 0) {
+      return res.status(200).json({
+        error: "No records found or '.result-card' elements not present in the response HTML.",
+        rawHTMLLength: data.length
+      });
+    }
 
     res.status(200).json(results);
 
