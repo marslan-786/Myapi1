@@ -10,16 +10,24 @@ module.exports = async function handler(req, res) {
 
   try {
     const url = `https://simownerdetails.org.pk/wp-admin/admin-ajax.php?action=get_number_data&get_number_data=searchdata=${number}`;
-    const { data } = await axios.get(url);
+    const response = await axios.get(url);
+    const responseData = response.data;
 
-    const $ = cheerio.load(data);
+    // responseData کے اندر 'data' فیلڈ ہے جو HTML markup ہے، اسے parse کریں
+    if (!responseData.success) {
+      return res.status(404).json({ error: "No data found from the source." });
+    }
+
+    const html = responseData.data; // یہاں وہ HTML ہے
+
+    const $ = cheerio.load(html);
 
     let results = [];
 
     $('.result-card').each((_, el) => {
       let name = $(el).find('.field label:contains("FULL NAME")').next().text().trim();
-      let phone = $(el).find('.field label:contains("PHONE")').next().text().trim();
-      let cnic = $(el).find('.field label:contains("CNIC")').next().text().trim();
+      let phone = $(el).find('.field label:contains("PHONE #")').next().text().trim();
+      let cnic = $(el).find('.field label:contains("CNIC #")').next().text().trim();
       let address = $(el).find('.field label:contains("ADDRESS")').next().text().trim();
 
       results.push({
@@ -33,8 +41,7 @@ module.exports = async function handler(req, res) {
 
     if (results.length === 0) {
       return res.status(200).json({
-        error: "No records found or '.result-card' elements not present in the response HTML.",
-        rawHTMLLength: data.length
+        error: "No records found in the HTML data.",
       });
     }
 
