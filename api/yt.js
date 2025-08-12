@@ -1,6 +1,4 @@
 // yt.js
-const { default: YouTube } = require('youtubei.js');
-
 module.exports = async function handler(req, res) {
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Only GET method allowed' });
@@ -12,13 +10,13 @@ module.exports = async function handler(req, res) {
   }
 
   try {
+    // dynamic import کریں ES Module کو
+    const { default: YouTube } = await import('youtubei.js');
     const youtube = new YouTube();
+
     const video = await youtube.getInfo(url);
 
-    // ویڈیو کا عنوان
     const title = video.title;
-
-    // فارمیٹس نکالیں
     const formats = video.streamingData.formats.map(format => ({
       itag: format.itag,
       qualityLabel: format.qualityLabel || format.quality || null,
@@ -29,16 +27,8 @@ module.exports = async function handler(req, res) {
       audioQuality: format.audioQuality || null,
     }));
 
-    // response بھیجیں
-    return res.json({
-      title,
-      formats,
-    });
-
+    return res.json({ title, formats });
   } catch (error) {
-    return res.status(500).json({
-      error: 'Failed to fetch video info',
-      details: error.message,
-    });
+    return res.status(500).json({ error: 'Failed to fetch video info', details: error.message });
   }
 };
