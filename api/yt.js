@@ -9,14 +9,17 @@ module.exports = async function handler(req, res) {
   }
 
   try {
-    // youtubei.js چونکہ ESM ہے، تو dynamic import کریں گے
+    // dynamic import کریں کیونکہ youtubei.js ESM ہے
     const { default: YouTube } = await import('youtubei.js');
 
+    // اب نیا YouTube client بنائیں
     const youtube = new YouTube();
 
-    const video = await youtube.getVideo(url);
+    // ویڈیو fetch کریں
+    // اب getVideo نہیں، بلکہ youtube.video(url) استعمال کریں
+    const video = await youtube.video(url);
 
-    // available formats نکالیں
+    // formats نکالیں
     const formats = video.streamingData.formats.map(format => ({
       itag: format.itag,
       qualityLabel: format.qualityLabel,
@@ -24,13 +27,14 @@ module.exports = async function handler(req, res) {
       url: format.url,
     }));
 
-    // 360p فارمیٹ تلاش کریں
+    // 360p تلاش کریں
     const format360 = formats.find(f => f.qualityLabel === '360p');
 
     if (!format360) {
       return res.status(404).json({ error: '360p format not found' });
     }
 
+    // response بھیجیں
     return res.json({
       title: video.title,
       url360: format360.url,
