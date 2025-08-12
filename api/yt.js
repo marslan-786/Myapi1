@@ -1,6 +1,6 @@
-const { Client } = require('youtubei.js');
-
 module.exports = async function handler(req, res) {
+  const { Client } = await import('youtubei.js');
+
   if (req.method !== 'GET') return res.status(405).json({ error: 'Only GET allowed' });
 
   const url = req.query.url;
@@ -10,8 +10,6 @@ module.exports = async function handler(req, res) {
 
   try {
     const video = await client.getVideo(url);
-
-    // تمام available formats (streams) دیکھیں
     const formats = video.streamingData.formats.map(format => ({
       itag: format.itag,
       qualityLabel: format.qualityLabel,
@@ -19,9 +17,7 @@ module.exports = async function handler(req, res) {
       url: format.url,
     }));
 
-    // example: 360p والا لنک نکالنا
     const format360 = formats.find(f => f.qualityLabel === '360p');
-
     if (!format360) {
       return res.status(404).json({ error: '360p format not found' });
     }
