@@ -1,34 +1,37 @@
-const youtubedl = require('youtube-dl-exec');
+const { Client } = require('youtubei.js');
 
 module.exports = async function handler(req, res) {
   if (req.method !== 'GET') return res.status(405).json({ error: 'Only GET allowed' });
 
   const url = req.query.url;
-  let resolution = req.query.res || '360p';
-
   if (!url) return res.status(400).json({ error: 'Missing url query param' });
 
-  if (!resolution.endsWith('p')) resolution += 'p';
-
-  const formatMap = {
-    '144p': '160+140',
-    '240p': '133+140',
-    '360p': '18',
-    '480p': '135+140',
-    '720p': '22',
-  };
-
-  const format = formatMap[resolution];
-  if (!format) return res.status(400).json({ error: `Unsupported resolution: ${resolution}` });
+  const client = new Client();
 
   try {
-    const output = await youtubedl(url, {
-      format,
-      getUrl: true,
-      noWarnings: true,
+    const video = await client.getVideo(url);
+
+    // تمام available formats (streams) دیکھیں
+    const formats = video.streamingData.formats.map(format => ({
+      itag: format.itag,
+      qualityLabel: format.qualityLabel,
+      mimeType: format.mimeType,
+      url: format.url,
+    }));
+
+    // example: 360p والا لنک نکالنا
+    const format360 = formats.find(f => f.qualityLabel === '360p');
+
+    if (!format360) {
+      return res.status(404).json({ error: '360p format not found' });
+    }
+
+    return res.json({
+      title: video.title,
+      url360: format360.url,
+      allFormats: formats,
     });
-    return res.json({ downloadUrl: output });
   } catch (e) {
-    return res.status(500).json({ error: 'yt-dlp error', details: e.message });
+    return res.status(500).json({ error: 'Failed to fetch video info', details: e.message });
   }
 };
