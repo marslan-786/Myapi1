@@ -1,12 +1,12 @@
-module.exports = async function handler(req, res) {
-  const { Client } = await import('youtubei.js');
+export default async function handler(req, res) {
+  const YouTube = (await import('youtubei.js')).default;
 
   if (req.method !== 'GET') return res.status(405).json({ error: 'Only GET allowed' });
 
   const url = req.query.url;
   if (!url) return res.status(400).json({ error: 'Missing url query param' });
 
-  const client = new Client();
+  const client = new YouTube();
 
   try {
     const video = await client.getVideo(url);
