@@ -1,59 +1,61 @@
-const axios = require('axios');
-const tough = require('tough-cookie');
-const { wrapper } = require('axios-cookiejar-support');
+const fetch = require("node-fetch");
 
-const TARGET = 'http://oopk.online/jazz';
-
-function extractMessage(html) {
-  const re = /<div class="(?:msg-box|error-box)">([\s\S]*?)<\/div>/i;
-  const m = html.match(re);
-  if (!m) return null;
-  return m[1].replace(/<[^>]*>/g, '').trim();
-}
-
-module.exports = async function handler(req, res) {
-  const { msisdn } = req.query;
-  const number = (msisdn || '').trim();
-  const offer = 'monthly';
-
-  if (!/^\d{10,13}$/.test(number)) {
-    return res.status(400).json({ success: false, error: 'Invalid MSISDN format' });
-  }
-
+module.exports = async (req, res) => {
   try {
-    // Step 1: ہر ریکویسٹ پر نیا cookie jar اور سیشن
-    const jar = new tough.CookieJar();
-    const client = wrapper(axios.create({ jar, withCredentials: true }));
+    const { number } = req.query;
+    if (!number) {
+      return res.status(400).json({ error: "Missing 'number' query parameter" });
+    }
 
-    // GET → نیا PHPSESSID لے لو
-    await client.get(TARGET, {
+    const url = "https://oopk.online/mralix/";
+
+    // 1️⃣ Step 1: GET request to get cookies
+    const getResp = await fetch(url, {
+      method: "GET",
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/115.0",
+        Referer: url,
       },
     });
 
-    // Step 2: POST ریکویسٹ
-    const params = new URLSearchParams();
-    params.append('msisdn', number);
-    params.append('offer', offer);
+    const rawCookies = getResp.headers.raw()["set-cookie"] || [];
+    const cookies = rawCookies.map(c => c.split(";")[0]).join("; ");
 
-    const resp = await client.post(TARGET, params.toString(), {
+    // 2️⃣ Step 2: POST request with cookies
+    const postResp = await fetch(url, {
+      method: "POST",
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
-        'Referer': TARGET,
-        'Origin': 'https://oopk.online',
-        'Content-Type': 'application/x-www-form-urlencoded',
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/115.0",
+        Referer: url,
+        "X-Requested-With": "XMLHttpRequest",
+        Origin: "https://oopk.online",
+        "Content-Type": "application/x-www-form-urlencoded",
+        Cookie: cookies,
       },
-      maxRedirects: 5,
+      body: new URLSearchParams({
+        msisdn: number,
+        offer: "monthly"
+      }),
     });
 
-    res.status(200).json({
-      success: true,
-      msisdn: number,
-      offer,
-      message: extractMessage(resp.data) || null,
-    });
+    const html = await postResp.text();
+
+    // 3️⃣ Extract msg-box or error-box
+    let message = null;
+    const msgMatch = html.match(/<div class="msg-box">([\s\S]*?)<\/div>/);
+    const errorMatch = html.match(/<div class="error-box">([\s\S]*?)<\/div>/);
+
+    if (msgMatch) {
+      message = msgMatch[1].replace(/<[^>]+>/g, "").trim();
+    } else if (errorMatch) {
+      message = errorMatch[1].replace(/<[^>]+>/g, "").trim();
+    } else {
+      message = "No message found";
+    }
+
+    res.status(200).json({ status: message });
+
   } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
+    res.status(500).json({ error: err.message });
   }
 };
