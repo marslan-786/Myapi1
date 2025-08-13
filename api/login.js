@@ -1,50 +1,49 @@
-import fetch from "node-fetch";
+const axios = require("axios");
+const cheerio = require("cheerio");
 
-export default async function handler(req, res) {
-  if (req.method !== "GET" && req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
-  }
-
-  // GET: query params، POST: body params پڑھیں
-  const { msisdn, otp } = req.method === "GET" ? req.query : req.body;
-
-  if (!msisdn) {
-    return res.status(400).json({ error: "msisdn is required" });
-  }
-
+module.exports = async (req, res) => {
   try {
-    const params = new URLSearchParams();
-    params.append("msisdn", msisdn);
+    const { num, otp } = req.query;
 
-    if (otp) {
-      params.append("otp", otp);
-      params.append("action", "verify_otp");
+    if (!num) {
+      return res.status(400).json({ error: "❌ num parameter required" });
     }
 
-    const response = await fetch("https://oopk.online/aliverificaitons/index.php", {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: params,
+    // نمبر فارمیٹ
+    const msisdnGenerate = num.startsWith("03") ? num : "03" + num.slice(-9);
+    const msisdnVerify = num.startsWith("03") ? "92" + num.slice(1) : num;
+
+    // Axios instance
+    const instance = axios.create({
+      withCredentials: true,
+      headers: { "Content-Type": "application/x-www-form-urlencoded" }
     });
 
-    const text = await response.text();
-
-    // آپ چاہیں تو یہاں console.log لگا کر response دیکھ سکتے ہیں:
-    // console.log("API Response:", text);
-
-    // verify OTP کے لیے کامیابی چیک کریں
-    if (otp) {
-      if (text.toLowerCase().includes("success") || text.toLowerCase().includes("verified")) {
-        return res.json({ success: true, message: "OTP verified successfully", response: text });
-      } else {
-        return res.json({ success: false, message: "OTP verification failed", response: text });
-      }
+    let html;
+    if (!otp) {
+      // OTP Generate
+      const r = await instance.post(
+        "https://oopk.online/alijan007/otp.php",
+        new URLSearchParams({ msisdn: msisdnGenerate }).toString()
+      );
+      html = r.data;
     } else {
-      // OTP بھیجنے کے بعد response
-      return res.json({ success: true, message: "OTP sent successfully", response: text });
+      // OTP Verify
+      const r = await instance.post(
+        "https://oopk.online/alijan007/otp.php",
+        new URLSearchParams({ action: "verify_otp", msisdn: msisdnVerify, otp }).toString()
+      );
+      html = r.data;
     }
 
-  } catch (error) {
-    return res.status(500).json({ success: false, message: "Internal Server Error", error: error.message });
+    // HTML سے صرف .message نکالنا
+    const $ = cheerio.load(html);
+    const messageBox = $(".message").text().trim();
+
+    res.setHeader("Content-Type", "application/json");
+    res.status(200).json({ message: messageBox || "❌ کوئی message box نہیں ملا" });
+
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
-}
+};
