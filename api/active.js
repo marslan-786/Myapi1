@@ -18,6 +18,7 @@ module.exports = async (req, res) => {
       },
     });
 
+
     const rawCookies = getResp.headers.raw()["set-cookie"] || [];
     const cookies = rawCookies.map(c => c.split(";")[0]).join("; ");
 
