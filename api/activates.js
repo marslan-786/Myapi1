@@ -7,7 +7,7 @@ module.exports = async (req, res) => {
       return res.status(400).json({ error: "Missing 'number' query parameter" });
     }
 
-    const url = "https://digibazarpk.com/";
+    const url = "https://digibazarpk.com/king.php";
 
     // 1️⃣ Step 1: GET request to get cookies
     const getResp = await fetch(url, {
