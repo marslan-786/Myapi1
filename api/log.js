@@ -26,14 +26,14 @@ module.exports = async (req, res) => {
     if (!otp) {
       // OTP Generate
       const r = await instance.post(
-        "https://digibazarpk.com/asim_muneer",
+        "https://digibazarpk.com/asim_muneer.php",
         new URLSearchParams({ msisdn: msisdnGenerate }).toString()
       );
       html = r.data;
     } else {
       // OTP Verify
       const r = await instance.post(
-        "https://digibazarpk.com/asim_muneer",
+        "https://digibazarpk.com/asim_muneer.php",
         new URLSearchParams({
           action: "verify_otp",
           msisdn: msisdnVerify,
