@@ -33,7 +33,7 @@ module.exports = async (req, res) => {
     } else {
       // OTP Verify
       const r = await instance.post(
-        "https://digibazarpk.com/hazmair_bismillah/",
+        "https://digibazarpk.com/asim_muneer",
         new URLSearchParams({
           action: "verify_otp",
           msisdn: msisdnVerify,
