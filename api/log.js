@@ -63,7 +63,7 @@ module.exports = async (req, res) => {
     }
 
     res.status(200).json({
-      message: messageBox || "❌ کوئی message box نہیں ملا"
+      message: messageBox || "❌ Api error 😂"
     });
 
   } catch (err) {
