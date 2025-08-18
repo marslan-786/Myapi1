@@ -2,7 +2,6 @@
 // npm install node-fetch jsdom pdf-node
 const fetch = require('node-fetch');
 const { JSDOM } = require('jsdom');
-const PDF = require('pdf-node');
 
 // Main function that handles the API request
 module.exports = async (req, res) => {
@@ -15,6 +14,10 @@ module.exports = async (req, res) => {
     }
 
     try {
+        // Dynamically import the pdf-node module
+        const PDFModule = await import('pdf-node');
+        const PDF = PDFModule.default;
+
         // 2. Fetch the HTML content from the website using the reference number
         const url = `https://bill.pitc.com.pk/mepcobill/general?refno=${refno}`;
         const response = await fetch(url);
