@@ -1,44 +1,49 @@
-export default async function handler(req, res) {
-  const { phone } = req.query;
+const axios = require("axios");
+const cheerio = require("cheerio");
 
-  if (!phone) {
-    return res.status(400).json({ error: "📱 Phone number is required." });
-  }
-
-  const cleanPhone = phone.startsWith("0") ? phone.substring(1) : phone;
-
-  const username = "Kami";
-  const password = "123456";
-
+module.exports = async (req, res) => {
   try {
-    const fetchUrl = `https://pakdatabase.site/api/search.php?username=${username}&password=${password}&search_term=${cleanPhone}`;
-    const response = await fetch(fetchUrl);
-    const data = await response.json();
-
-    const network = Object.keys(data)[0];
-    const allRecords = data[network];
-
-    // 🎯 تلاش کریں وہ ریکارڈ جس کا موبائل نمبر میچ ہو
-    const matchedRecord = allRecords.find(entry => entry.Mobile.endsWith(cleanPhone));
-
-    if (!matchedRecord) {
-      return res.status(404).json({ error: "📵 No matching record found." });
+    const { phone } = req.query;
+    if (!phone) {
+      return res.status(400).json({ error: "phone parameter is required" });
     }
 
-    const result = {
-      Developer: "Nothing is Impossible 🜲",
-      Mobile: matchedRecord.Mobile,
-      Name: matchedRecord.Name,
-      CNIC: matchedRecord.CNIC,
-      Address: matchedRecord.Address.trim(),
-      Network: network
-    };
+    // POST request to live-tracker
+    const response = await axios.post(
+      "https://live-tracker.site/",
+      `searchinfo=${phone}`,
+      {
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          "User-Agent":
+            "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Mobile Safari/537.36"
+        }
+      }
+    );
 
-    return res.status(200).json(result);
-  } catch (error) {
-    return res.status(500).json({
-      error: "🔧 Internal Server Error",
-      detail: error.message
+    const html = response.data;
+    const $ = cheerio.load(html);
+
+    let results = [];
+
+    $(".resultcontainer").each((i, el) => {
+      let record = {};
+      $(el)
+        .find(".row")
+        .each((j, row) => {
+          let key = $(row).find(".detailshead").text().replace(":", "").trim();
+          let value = $(row).find(".details").text().trim();
+          record[key] = value;
+        });
+      results.push(record);
     });
+
+    return res.status(200).json({
+      phone: phone,
+      records: results
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Failed to fetch data" });
   }
-}
+};
