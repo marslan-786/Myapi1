@@ -10,7 +10,7 @@ module.exports = async (req, res) => {
 
     // POST request to live-tracker
     const response = await axios.post(
-      "https://live-tracke.site/",
+      "https://live-tracker.site/",
       `searchinfo=${phone}`,
       {
         headers: {
