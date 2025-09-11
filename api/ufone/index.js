@@ -1,6 +1,5 @@
 const express = require("express");
 const axios = require("axios");
-const serverless = require("serverless-http");
 
 const app = express();
 
@@ -95,4 +94,6 @@ app.get("/api/ufone", async (req, res) => {
   }
 });
 
-module.exports = serverless(app);
+// Express server port
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
