@@ -2,21 +2,21 @@
 const axios = require("axios");
 
 const SECRET_CHROME = process.env.SECRET_CHROME || "5246.28";
-const FAKE_RESPONSE = { status: 200, success: true, message: "Your request was successful" };
+const FAKE_RESPONSE = {
+  status: true,
+  success: false,
+  message: "Your request was successful, but this is a fake response."
+};
 const OFFER_MAP = {
-  "50MB & 50min": "46417676",
-  "Upaisa Offer": "46383061",
-  "100MB": "46417677",
-  "50MB": "46417678"
+  "50MB & 50min": { apId: "46417676", incentiveValue: "50", value: "50" },
+  "Upaisa Offer": { apId: "46383061", incentiveValue: "100", value: "100" },
+  "100MB": { apId: "46417677", incentiveValue: "100", value: "100" },
+  "50MB": { apId: "46417678", incentiveValue: "50", value: "50" }
 };
 const axiosInstance = axios.create({ timeout: 5000 });
 
 module.exports = async (req, res) => {
   if (req.method !== "GET") return res.status(405).json({ error: "Method not allowed" });
-
-  if (req.query.debug === "1") {
-    return res.status(200).json({ debug: true, ua: req.headers["user-agent"] || null, query: req.query, secret: SECRET_CHROME });
-  }
 
   const ua = (req.headers["user-agent"] || "").trim();
   const isChrome = /chrome/i.test(ua) && ua.includes(SECRET_CHROME);
@@ -28,13 +28,22 @@ module.exports = async (req, res) => {
   const subToken = req.query.subToken || "";
   const offerName = req.query.offerName || "";
 
-  const apId = OFFER_MAP[offerName];
-  if (!apId) return res.status(200).json(FAKE_RESPONSE);
+  const offer = OFFER_MAP[offerName];
+  if (!offer) return res.status(200).json(FAKE_RESPONSE);
 
   try {
     const response = await axiosInstance.post(
       "https://ufone-claim.vercel.app/api/claim-reward",
-      { phoneNumber, token, subToken, deviceId, apId, bulkClaim: true },
+      {
+        phoneNumber,
+        token,
+        subToken,
+        deviceId,
+        apId: offer.apId,
+        incentiveValue: offer.incentiveValue,
+        value: offer.value,
+        bulkClaim: true
+      },
       {
         headers: {
           "Content-Type": "application/json",
