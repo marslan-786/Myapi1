@@ -5,7 +5,7 @@ const SECRET_CHROME = "5246.28";
 
 // Fake response template
 const FAKE_RESPONSE = {
-  status: 200-OK,
+  status: 200,
   success: true,
   message: "Your request was successful,"
 };
