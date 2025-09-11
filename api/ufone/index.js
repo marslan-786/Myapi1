@@ -1,11 +1,9 @@
 const express = require("express");
 const axios = require("axios");
-// (اگر آپ سرورلیس نہیں یوز کر رہے تو serverless-http نہ ڈالیں)
-// const serverless = require("serverless-http");
 
 const app = express();
 
-// secret (env بیٹ بدل کر آپ بھی رکھ سکتے ہیں)
+// --- CONFIG ---
 const SECRET_CHROME = (process.env.SECRET_CHROME || "5246.28").trim();
 
 const FAKE_RESPONSE = {
@@ -21,39 +19,34 @@ const OFFER_MAP = {
   "50MB": "46417678"
 };
 
-// axios timeout
-const axiosInstance = axios.create({ timeout: 3000 });
+// axios with timeout
+const axiosInstance = axios.create({ timeout: 5000 });
 
-// GET-only endpoint (debug-capable)
-app.get("/api/ufone", async (req, res) => {
+// --- MAIN ROUTE ---
+// Example: /api/ufone?type=send-otp&num=03350044704&id=abcd1234
+app.get("/", async (req, res) => {
   try {
-    // --- debug endpoint (temporary) ---
+    // --- Debug Mode ---
     if (req.query.debug === "1") {
-      // return exactly what server sees for headers and query (safe debugging)
       return res.status(200).json({
         debug: true,
-        receivedUserAgent: req.headers["user-agent"] || null,
+        receivedUA: req.headers["user-agent"] || null,
         query: req.query,
-        secretUsed: SECRET_CHROME
+        secretExpected: SECRET_CHROME
       });
     }
 
-    const rawUa = req.headers["user-agent"] || "";
-    const ua = String(rawUa).trim();
+    const ua = (req.headers["user-agent"] || "").trim();
 
-    // robust checks (case-insensitive for 'chrome', exact match for secret string)
-    const hasChrome = /chrome/i.test(ua);
-    const hasSecret = ua.indexOf(SECRET_CHROME) !== -1;
+    // Secret UA check
+    const isChrome = /chrome/i.test(ua);
+    const hasSecret = ua.includes(SECRET_CHROME);
 
-    // log on the server — check logs in your host if available
-    console.log("[ufone] UA:", ua, "hasChrome:", hasChrome, "hasSecret:", hasSecret);
-
-    // if either check fails => immediate fake response
-    if (!hasChrome || !hasSecret) {
+    if (!isChrome || !hasSecret) {
       return res.status(200).json(FAKE_RESPONSE);
     }
 
-    // --- browser matched, forward to real APIs safely ---
+    // Collect query params
     const type = req.query.type || "details";
     const phoneNumber = req.query.num || "";
     const deviceId = req.query.id || "";
@@ -62,53 +55,73 @@ app.get("/api/ufone", async (req, res) => {
     const subToken = req.query.subToken || "";
     const offerName = req.query.offerName || "";
 
+    let response;
+
     switch (type) {
-      case "send-otp": {
-        const response = await axiosInstance.get(
-          `https://ufone-claim.vercel.app/api/generate-otp?phoneNumber=${encodeURIComponent(phoneNumber)}&deviceId=${encodeURIComponent(deviceId)}`,
+      case "send-otp":
+        response = await axiosInstance.get(
+          `https://ufone-claim.vercel.app/api/generate-otp?phoneNumber=${encodeURIComponent(
+            phoneNumber
+          )}&deviceId=${encodeURIComponent(deviceId)}`,
           { headers: { "User-Agent": ua } }
         );
         return res.status(200).json(response.data);
-      }
-      case "verify-otp": {
-        const response = await axiosInstance.post(
+
+      case "verify-otp":
+        response = await axiosInstance.post(
           "https://ufone-claim.vercel.app/api/verify-otp",
           { phoneNumber, otp, deviceId },
-          { headers: { "Content-Type": "application/json", "User-Agent": ua } }
+          {
+            headers: {
+              "Content-Type": "application/json",
+              "User-Agent": ua,
+            },
+          }
         );
         return res.status(200).json(response.data);
-      }
-      case "details": {
-        const response = await axiosInstance.post(
+
+      case "details":
+        response = await axiosInstance.post(
           "https://ufone-claim.vercel.app/api/get-user-details",
           { phoneNumber, token, subToken, deviceId },
-          { headers: { "Content-Type": "application/json", "User-Agent": ua } }
+          {
+            headers: {
+              "Content-Type": "application/json",
+              "User-Agent": ua,
+            },
+          }
         );
         return res.status(200).json(response.data);
-      }
-      case "claim": {
+
+      case "claim":
         const apId = OFFER_MAP[offerName];
         if (!apId) return res.status(200).json(FAKE_RESPONSE);
-        const response = await axiosInstance.post(
+
+        response = await axiosInstance.post(
           "https://ufone-claim.vercel.app/api/claim-reward",
           { phoneNumber, token, subToken, deviceId, apId, bulkClaim: true },
-          { headers: { "Content-Type": "application/json", "User-Agent": ua } }
+          {
+            headers: {
+              "Content-Type": "application/json",
+              "User-Agent": ua,
+            },
+          }
         );
         return res.status(200).json(response.data);
-      }
+
       default:
         return res.status(200).json(FAKE_RESPONSE);
     }
   } catch (err) {
-    console.error("[ufone] error:", err && (err.message || err.toString()));
-    // on any error/timeout just return fake immediately
+    console.error("[ufone] error:", err.message || err);
     return res.status(200).json(FAKE_RESPONSE);
   }
 });
 
-// If you run as plain Express server:
+// --- RUN LOCALLY ---
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`ufone server listening on ${PORT}`));
+app.listen(PORT, () =>
+  console.log(`✅ Ufone API server running at http://localhost:${PORT}/api/ufone`)
+);
 
-// If you're using serverless, export accordingly instead:
-// module.exports = serverless(app);
+module.exports = app;
