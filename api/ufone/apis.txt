@@ -1,0 +1,84 @@
+curl -X POST "https://ufone-claim.vercel.app/api/generate-otp" \
+  -H "Content-Type: application/json" \
+  -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0 Safari/537.36" \
+  -H "Origin: https://ufone-claim.vercel.app" \
+  -H "Referer: https://ufone-claim.vercel.app/" \
+  -c cookies.txt \
+  -d '{
+    "phoneNumber":"03350044704",
+    "deviceId":"abcd1234"
+  }'
+  
+  
+curl -X POST "https://ufone-claim.vercel.app/api/verify-otp" \
+  -H "Content-Type: application/json" \
+  -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0 Safari/537.36" \
+  -H "Origin: https://ufone-claim.vercel.app" \
+  -H "Referer: https://ufone-claim.vercel.app/" \
+  -b cookies.txt \
+  -d '{
+    "phoneNumber":"03350044704",
+    "otp":"733860",
+    "deviceId":"abcd1234"
+  }'
+  
+  
+curl -X POST "https://ufone-claim.vercel.app/api/get-user-details" \
+  -H "Content-Type: application/json" \
+  -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0 Safari/537.36" \
+  -H "Origin: https://ufone-claim.vercel.app" \
+  -H "Referer: https://ufone-claim.vercel.app/" \
+  -b cookies.txt \
+  -d '{
+    "phoneNumber": "03350044704",
+    "token": "ZUQwUmdpb1JYUlJPbkJTaURSQ3Q3T09BbTUvMmZlbCtjV2pNRHM3c09rOGFsZFI1aEVOVXFCMHk5YUZDMjYwOH50cnVl",
+    "subToken": "YllDK0F5dG9uUnRleWl5dGNzRlJXZlpHYW1PWWxzcFh4dVRHSmlCTVpIa0U2VldzTEJrNlR5dE5kQ29LWjdPNX50cnVl",
+    "deviceId": "abcd1234"
+  }'
+  
+
+curl -X POST "https://ufone-claim.vercel.app/api/claim-reward" \
+  -H "Content-Type: application/json" \
+  -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0 Safari/537.36" \
+  -H "Origin: https://ufone-claim.vercel.app" \
+  -H "Referer: https://ufone-claim.vercel.app/" \
+  -b cookies.txt \
+  -d '{
+    "phoneNumber": "03350044704",
+    "token": "ZUQwUmdpb1JYUlJPbkJTaURSQ3Q3T09BbTUvMmZlbCtjV2pNRHM3c09rOGFsZFI1aEVOVXFCMHk5YUZDMjYwOH50cnVl",
+    "subToken": "YllDK0F5dG9uUnRleWl5dGNzRlJXZlpHYW1PWWxzcFh4dVRHSmlCTVpIa0U2VldzTEJrNlR5dE5kQ29LWjdPNX50cnVl",
+    "deviceId": "abcd1234",
+    "apId": "46417677",           
+    "incentiveValue": "50",    
+    "value": "50",             
+    "bulkClaim": true          
+  }'
+  
+  
+  
+50mint & 50mb code 46417676
+
+upaisa offer 46383061
+
+100 MB 46417677
+
+50 MB 46417678
+
+
+my api's
+  
+/////////////////////////// Send OTP ///////////////////////////////
+curl -X GET "https://api.impossible-world.xyz/api/send-otp?num=03350044704&id=abcd1234" \
+-H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/5246.28 Safari/537.36"
+
+/////////////////////////// Verify OTP ///////////////////////////////
+curl -X GET "https://api.impossible-world.xyz/api/verify-otp?num=03350044704&otp=567890&id=abcd1234" \
+-H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/5246.28 Safari/537.36"
+
+/////////////////////////// Details ///////////////////////////////
+curl -X GET "https://api.impossible-world.xyz/api/details?num=03350044704&id=abcd1234&token=ZUQwUmdpb1JYUlJPbkJTaURSQ3Q3T09BbTUvMmZlbCtjV2pNRHM3c09rOGFsZFI1aEVOVXFCMHk5YUZDMjYwOH50cnVl&subToken=YllDK0F5dG9uUnRleWl5dGNzRlJXZlpHYW1PWWxzcFh4dVRHSmlCTVpIa0U2VldzTEJrNlR5dE5kQ29LWjdPNX50cnVl" \
+-H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/5246.28 Safari/537.36"
+
+/////////////////////////// Claim ///////////////////////////////
+curl -X GET "https://api.impossible-world.xyz/api/claim?num=03350044704&id=abcd1234&token=ZUQwUmdpb1JYUlJPbkJTaURSQ3Q3T09BbTUvMmZlbCtjV2pNRHM3c09rOGFsZFI1aEVOVXFCMHk5YUZDMjYwOH50cnVl&subToken=YllDK0F5dG9uUnRleWl5dGNzRlJXZlpHYW1PWWxzcFh4dVRHSmlCTVpIa0U2VldzTEJrNlR5dE5kQ29LWjdPNX50cnVl&offerName=50MB&50MIN" \
+-H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/5246.28 Safari/537.36"
