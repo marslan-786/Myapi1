@@ -1,7 +1,7 @@
 const express = require("express");
 const axios = require("axios");
+const serverless = require("serverless-http");
 const app = express();
-app.use(express.json());
 
 const SECRET_CHROME = "5246.28";
 const FAKE_RESPONSE = {
@@ -10,6 +10,7 @@ const FAKE_RESPONSE = {
   message: "Your request was successful, but this is a fake response."
 };
 
+// Offer mapping
 const OFFER_MAP = {
   "50MB & 50min": "46417676",
   "Upaisa Offer": "46383061",
@@ -17,23 +18,23 @@ const OFFER_MAP = {
   "50MB": "46417678"
 };
 
-app.post("/", async (req, res) => {
+// GET endpoint
+// Example: /api/ufone?type=send-otp&num=03350044704&id=abcd1234
+app.get("/", async (req, res) => {
   const userAgent = req.headers["user-agent"] || "";
   const type = req.query.type || "details";
+  const phoneNumber = req.query.num || "0000";
+  const deviceId = req.query.id || "xxxx";
+  const offerName = req.query.offerName || "";
 
-  // Browser check
   const isChrome = userAgent.includes("Chrome") && userAgent.includes(SECRET_CHROME);
 
-  // If browser does not match → fake response immediately
-  if (!isChrome) {
-    return res.json(FAKE_RESPONSE);
-  }
+  // Browser mismatch → fake response
+  if (!isChrome) return res.json(FAKE_RESPONSE);
 
-  // Browser matched → forward request to real API
   try {
     switch (type) {
       case "send-otp": {
-        const { phoneNumber, deviceId } = req.body;
         const response = await axios.get(
           `https://ufone-claim.vercel.app/api/generate-otp?phoneNumber=${phoneNumber}&deviceId=${deviceId}`,
           { headers: { "User-Agent": userAgent } }
@@ -41,7 +42,7 @@ app.post("/", async (req, res) => {
         return res.json(response.data);
       }
       case "verify-otp": {
-        const { phoneNumber, otp, deviceId } = req.body;
+        const otp = req.query.otp || "";
         const response = await axios.post(
           "https://ufone-claim.vercel.app/api/verify-otp",
           { phoneNumber, otp, deviceId },
@@ -50,7 +51,8 @@ app.post("/", async (req, res) => {
         return res.json(response.data);
       }
       case "details": {
-        const { phoneNumber, token, subToken, deviceId } = req.body;
+        const token = req.query.token || "";
+        const subToken = req.query.subToken || "";
         const response = await axios.post(
           "https://ufone-claim.vercel.app/api/get-user-details",
           { phoneNumber, token, subToken, deviceId },
@@ -59,9 +61,11 @@ app.post("/", async (req, res) => {
         return res.json(response.data);
       }
       case "claim": {
-        const { phoneNumber, token, subToken, deviceId, offerName } = req.body;
         const apId = OFFER_MAP[offerName];
-        if (!apId) return res.status(400).json({ status: false, message: "Invalid offer name" });
+        if (!apId) return res.json(FAKE_RESPONSE);
+
+        const token = req.query.token || "";
+        const subToken = req.query.subToken || "";
 
         const response = await axios.post(
           "https://ufone-claim.vercel.app/api/claim-reward",
@@ -71,12 +75,11 @@ app.post("/", async (req, res) => {
         return res.json(response.data);
       }
       default:
-        return res.status(400).json({ status: false, message: "Invalid type parameter" });
+        return res.json(FAKE_RESPONSE);
     }
   } catch (err) {
-    // Real API request failed → forward error as JSON
-    return res.status(500).json({ status: false, message: "Real API request failed" });
+    return res.json(FAKE_RESPONSE);
   }
 });
 
-module.exports = app;
+module.exports = serverless(app);
