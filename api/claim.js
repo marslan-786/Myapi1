@@ -13,7 +13,7 @@ const OFFER_MAP = {
   "100MB": { apId: "46417677", incentiveValue: "100", value: "100" },
   "3GB": { apId: "46417682", incentiveValue: "50", value: "50" },
   "2GB-10M": { apId: "46417679", incentiveValue: "50", value: "50" },
-  "2GB-30M": { apId: "46417681", incentiveValue: "50", value: "50" }
+  "2GB-30M": { apId: "46417681", incentiveValue: "50", value: "50" },
   "1GB-20M": { apId: "46417680", incentiveValue: "50", value: "50" }
 };
 const axiosInstance = axios.create({ timeout: 5000 });
