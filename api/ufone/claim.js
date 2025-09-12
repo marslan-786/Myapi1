@@ -3,9 +3,9 @@ const axios = require("axios");
 
 const SECRET_CHROME = process.env.SECRET_CHROME || "5246.28";
 const FAKE_RESPONSE = {
-  status: true,
-  success: false,
-  message: "Your request was successful, but this is a fake response."
+  status: 200,
+  success: true,
+  message: "Your request was successful"
 };
 const OFFER_MAP = {
   "50MB&50min": { apId: "46417676", incentiveValue: "50", value: "50" },
