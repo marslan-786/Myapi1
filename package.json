@@ -23,6 +23,7 @@
     "serverless-http": "^3.0.0",
     "puppeteer-core": "^23.11.1",
     "puppeteer-extra": "^3.3.6",
-    "puppeteer-extra-plugin-stealth": "^2.10.1"
+    "puppeteer-extra-plugin-stealth": "^2.10.1",
+    "chrome-aws-lambda": "^10.1.0"
   }
 }
