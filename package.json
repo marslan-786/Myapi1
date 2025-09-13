@@ -1,5 +1,5 @@
 {
-  "name": "live-tracker-api",
+  "name": "my-all-apis",
   "version": "1.0.0",
   "main": "index.js",
   "type": "commonjs",
@@ -20,6 +20,9 @@
     "youtubei.js": "^15.0.1",
     "jsdom": "^24.1.0",
     "pdf-node": "^1.0.0",
-    "serverless-http": "^3.0.0"
+    "serverless-http": "^3.0.0",
+    "puppeteer": "^23.0.0",
+    "puppeteer-extra": "^3.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2"
   }
 }
