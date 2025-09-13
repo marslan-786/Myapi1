@@ -21,8 +21,7 @@
     "jsdom": "^24.1.0",
     "pdf-node": "^1.0.0",
     "serverless-http": "^3.0.0",
-    "puppeteer-core": "^23.0.0",
-    "chrome-aws-lambda": "^10.1.0",
+    "puppeteer-core": "^23.11.1",
     "puppeteer-extra": "^3.3.6",
     "puppeteer-extra-plugin-stealth": "^2.11.2"
   }
