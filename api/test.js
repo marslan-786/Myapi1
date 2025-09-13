@@ -1,13 +1,24 @@
 const puppeteer = require('puppeteer-extra');
-const StealthPlugin = require('puppeteer-extra-plugin-stealth');
 
-puppeteer.use(StealthPlugin());
+// Use StealthPlugin with default evasions (chrome.app removed)
+const StealthPlugin = require('puppeteer-extra-plugin-stealth');
+puppeteer.use(
+  StealthPlugin({
+    evasions: [
+      'user-agent-override',
+      'iframe-content-window',
+      'navigator.plugins',
+      'navigator.languages',
+      'navigator.vendor'
+    ]
+  })
+);
 
 module.exports = async (req, res) => {
   let browser = null;
 
   try {
-    // اگر Vercel environment میں کوئی Chromium path available ہو تو use کریں
+    // Vercel environment Chromium path
     const executablePath =
       process.env.PUPPETEER_EXECUTABLE_PATH || '/usr/bin/google-chrome';
 
@@ -20,18 +31,18 @@ module.exports = async (req, res) => {
 
     const page = await browser.newPage();
 
-    // mobile-like user-agent
+    // Mobile-like user-agent
     await page.setUserAgent(
       'Mozilla/5.0 (Linux; Android 11; NEW 20) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Mobile Safari/537.36'
     );
 
-    // target page جہاں cftoken generate ہوتا ہے
+    // Target page for cftoken
     await page.goto('https://ssyoutube.rip/en-a1/', {
       waitUntil: 'networkidle2',
       timeout: 60000,
     });
 
-    // cftoken extract
+    // Extract cftoken
     const cftoken = await page.evaluate(() => {
       const input = document.querySelector('input[name="cftoken"]');
       if (input) return input.value;
@@ -43,7 +54,7 @@ module.exports = async (req, res) => {
       return match ? match[1] : null;
     });
 
-    // target URL (query parameter یا default)
+    // Target URL (query parameter or default)
     const targetUrl =
       req.query.url || req.body?.url || 'https://youtu.be/_n6ky63HA0k?si=plvLvbcxH4KKP6Vq';
 
