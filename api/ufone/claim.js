@@ -8,6 +8,11 @@ const FAKE_RESPONSE = {
   message: "Your request was successful"
 };
 const OFFER_MAP = {
+  "RS1": { apId: "46383061", incentiveValue: "1", value: "Rs.1 in UPaisa+" },
+  "RS2": { apId: "46383061", incentiveValue: "2", value: "Rs.2 in UPaisa+" },
+  "RS3": { apId: "46383061", incentiveValue: "3", value: "Rs.3 in UPaisa+" },
+  "RS4": { apId: "46383061", incentiveValue: "4", value: "Rs.4 in UPaisa+" },
+  "RS5": { apId: "46383061", incentiveValue: "5", value: "Rs.5 in UPaisa+" },
   "50MB-50MIN": { apId: "46417676", incentiveValue: "50", value: "50" },
   "upaisa": { apId: "46383061", incentiveValue: "100", value: "100" },
   "50MB": { apId: "46417678", incentiveValue: "100", value: "100" },
