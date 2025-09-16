@@ -8,7 +8,7 @@ const FAKE_RESPONSE = {
   message: "Your request was successful"
 };
 const OFFER_MAP = {
-  "50MB&50min": { apId: "46417676", incentiveValue: "50", value: "50" },
+  "50MB-50MIN": { apId: "46417676", incentiveValue: "50", value: "50" },
   "upaisa": { apId: "46383061", incentiveValue: "100", value: "100" },
   "100MB": { apId: "46417677", incentiveValue: "100", value: "100" },
   "3GB": { apId: "46417682", incentiveValue: "50", value: "50" },
